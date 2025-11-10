@@ -35,7 +35,6 @@ let simCategoryScores = {};
 function escapeHTML(str = '') {
     return str.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
-
 function shuffleArray(arr) {
     const a = arr.slice();
     for (let i = a.length - 1; i > 0; i--) {
@@ -44,7 +43,6 @@ function shuffleArray(arr) {
     }
     return a;
 }
-
 function formatTime(s) {
     if (s < 0) s = 0;
     const h = Math.floor(s / 3600);
@@ -52,16 +50,13 @@ function formatTime(s) {
     const sec = s % 60;
     return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
 }
-
 function arraysEqual(a, b) {
     return a.length === b.length && a.every((val, index) => val === b[index]);
 }
-
 function focusFirstOption() {
     const first = document.querySelector('.opt:not(.opt-disabled)');
     if (first) first.focus();
 }
-
 function parseCSV(csv) {
     const lines = csv.split(/\r?\n/).filter(l => l.trim() !== "");
     const headers = lines.shift().split(/,|;|\t/).map(h => h.trim());
@@ -83,31 +78,19 @@ function parseCSV(csv) {
     });
 }
 
-// === Função Auxiliar para Mostrar Erros ===
+// === Toasts ===
 function showError(message) {
     const errorDiv = document.createElement('div');
     errorDiv.className = 'error-message';
-    errorDiv.style.cssText = `
-        position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-        background: #ff4d4d; color: white; padding: 10px 20px; border-radius: 5px;
-        z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    `;
     errorDiv.textContent = message;
     document.body.appendChild(errorDiv);
     setTimeout(() => errorDiv.remove(), 5000);
 }
-
-// === Função para Mostrar Mensagem Temporária de Acerto ===
 function showCorrectMessage() {
     const messageDiv = document.createElement('div');
     messageDiv.className = 'correct-message';
-    messageDiv.style.cssText = `
-        position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-        background: #28a745; color: white; padding: 10px 20px; border-radius: 5px;
-        z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    `;
     messageDiv.setAttribute('aria-live', 'assertive');
-    messageDiv.textContent = 'Acertou ✔';
+    messageDiv.textContent = 'Acertou Correct';
     document.body.appendChild(messageDiv);
     setTimeout(() => messageDiv.remove(), 1000);
 }
@@ -119,21 +102,9 @@ async function loadSheet() {
             document.getElementById('qMeta').textContent = 'Erro: Configuração da API não encontrada em config.js.';
             return;
         }
-
-        let data = null;
-        if (Config.SHEET_API_URL) {
-            const res = await fetch(Config.SHEET_API_URL);
-            if (!res.ok) throw new Error(`Falha na API: ${res.status}`);
-            data = await res.json();
-        } else if (SHEET_CSV_URL && SHEET_CSV_URL.length > 10 && !SHEET_CSV_URL.includes('PASTE_YOUR')) {
-            const res = await fetch(SHEET_CSV_URL);
-            if (!res.ok) throw new Error(`Falha ao buscar CSV: ${res.status}`);
-            const txt = await res.text();
-            data = parseCSV(txt);
-        } else {
-            document.getElementById('qMeta').textContent = 'Configure SHEET_API_URL ou SHEET_CSV_URL em config.js.';
-            return;
-        }
+        const res = await fetch(Config.SHEET_API_URL);
+        if (!res.ok) throw new Error(`Falha na API: ${res.status}`);
+        const data = await res.json();
 
         allQuestions = (data || []).map((r, idx) => ({
             id: String(r.id || idx + 1),
@@ -167,7 +138,7 @@ async function loadSheet() {
         });
 
         if (allQuestions.length === 0) {
-            document.getElementById('qMeta').textContent = 'Sem perguntas válidas no momento, por favor tente novamente mais tarde.';
+            document.getElementById('qMeta').textContent = 'Sem perguntas válidas no momento.';
             return;
         }
 
@@ -197,20 +168,12 @@ function renderQuestion(q) {
     }
 
     current = q;
-    qMeta.textContent = mode === 'simulado' 
+    qMeta.textContent = mode === 'simulado'
         ? `Pergunta ${simIndex + 1} de ${SIM_TOTAL} — Categoria: ${escapeHTML(q.category || '—')}`
         : `ID ${escapeHTML(q.id)} — Categoria: ${escapeHTML(q.category || '—')}`;
-
     qText.textContent = q.question;
-
-    if (q.questionImage) {
-        qImg.src = q.questionImage;
-        qImg.style.display = 'block';
-    } else {
-        qImg.style.display = 'none';
-        qImg.src = '';
-    }
-
+    qImg.src = q.questionImage || '';
+    qImg.style.display = q.questionImage ? 'block' : 'none';
     opts.innerHTML = '';
     expl.style.display = 'none';
     expl.innerHTML = '';
@@ -218,7 +181,6 @@ function renderQuestion(q) {
     ['A', 'B', 'C', 'D'].forEach(letter => {
         const txt = q.options[letter];
         if (!txt) return;
-
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'opt';
@@ -226,12 +188,7 @@ function renderQuestion(q) {
         btn.setAttribute('aria-pressed', 'false');
         btn.setAttribute('aria-label', `Alternativa ${letter}: ${txt}`);
         btn.tabIndex = 0;
-
-        let imgHtml = '';
-        if (q.optionImages?.[letter]) {
-            imgHtml = `<img src="${escapeHTML(q.optionImages[letter])}" alt="Imagem da alternativa ${letter}">`;
-        }
-
+        let imgHtml = q.optionImages?.[letter] ? `<img src="${escapeHTML(q.optionImages[letter])}" alt="Imagem da alternativa ${letter}">` : '';
         btn.innerHTML = `<span class="letter">${letter}</span><span class="text">${escapeHTML(txt)}</span>${imgHtml}`;
         btn.addEventListener('click', onSelectOption);
         btn.addEventListener('keydown', e => {
@@ -245,21 +202,16 @@ function renderQuestion(q) {
 
     setTimeout(() => document.activeElement.blur(), 120);
     document.getElementById('questionCard').animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300 });
-
     answeredQuestions.add(q.id);
 }
 
-// === Exibição de Explicação ===
+// === Explicação ===
 function showExplanation(isCorrect) {
     const expl = document.getElementById('explanation');
     expl.style.display = 'block';
-    expl.innerHTML = `<strong>${isCorrect ? 'Acertou ✔' : 'Errou ✖'}</strong><div style="margin-top:0.5rem">${escapeHTML(current.explanation || 'Sem explicação disponível.')}</div>`;
-
+    expl.innerHTML = `<strong>${isCorrect ? 'Acertou Correct' : 'Errou Wrong'}</strong><div style="margin-top:0.5rem">${escapeHTML(current.explanation || 'Sem explicação disponível.')}</div>`;
     if (!isCorrect) {
-        window.scrollTo({
-            top: document.body.scrollHeight,
-            behavior: 'smooth'
-        });
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         document.getElementById('questionCard').animate([
             { transform: 'translateX(0)' },
             { transform: 'translateX(-6px)' },
@@ -267,12 +219,10 @@ function showExplanation(isCorrect) {
             { transform: 'translateX(0)' }
         ], { duration: 360 });
     }
-
-    const acc = document.getElementById('accessibilityStatus');
-    acc.textContent = isCorrect ? 'Resposta correta' : 'Resposta errada';
+    document.getElementById('accessibilityStatus').textContent = isCorrect ? 'Resposta correta' : 'Resposta errada';
 }
 
-// === Seleção e Validação de Opções ===
+// === Validação ===
 function onSelectOption(e) {
     if (!current) return;
     const btn = e.currentTarget;
@@ -291,7 +241,6 @@ function validateAnswer(selected) {
         o.classList.add('opt-disabled');
         o.removeEventListener('click', onSelectOption);
     });
-
     const correct = current.correct.slice().sort();
     const selSorted = selected.slice().sort();
     const isCorrect = arraysEqual(correct, selSorted);
@@ -309,19 +258,13 @@ function validateAnswer(selected) {
             if (correct.includes(l)) o.classList.add('correct');
             if (selected.includes(l) && !correct.includes(l)) o.classList.add('wrong');
         });
-
-        // Limpa e oculta o elemento de explicação
         const expl = document.getElementById('explanation');
         expl.style.display = 'none';
         expl.innerHTML = '';
-
         if (isCorrect) {
-            // Mostra mensagem temporária de acerto
             showCorrectMessage();
-            // Avança para a próxima pergunta após 1 segundo
             setTimeout(nextQuestion, 1000);
         } else {
-            // Mostra explicação apenas quando errar
             showExplanation(false);
         }
     } else {
@@ -336,7 +279,7 @@ function validateAnswer(selected) {
     }
 }
 
-// === Atualização de Estatísticas ===
+// === Estatísticas ===
 function updateStats() {
     document.getElementById('totalAsked').textContent = asked;
     document.getElementById('totalCorrect').textContent = correctCount;
@@ -344,17 +287,15 @@ function updateStats() {
     const pct = Math.round((correctCount / Math.max(1, asked)) * 100);
     document.getElementById('progress').textContent = `${pct}%`;
 }
-
 function updateStatsInlineVisibility() {
     document.getElementById('statsInline').style.display = mode === 'quiz' ? 'flex' : 'none';
 }
-
 function updateActionsInlineVisibility() {
     const actions = document.getElementById('actionsInline');
     actions.classList.toggle('simulado-active', mode === 'simulado');
 }
 
-// === Navegação entre Perguntas ===
+// === Navegação ===
 function nextQuestion() {
     const cat = document.getElementById('categorySelect').value;
     let candidates = cat === 'all' ? allQuestions : allQuestions.filter(q => q.category === cat);
@@ -362,49 +303,40 @@ function nextQuestion() {
         document.getElementById('qMeta').textContent = 'Nenhuma pergunta disponível para esta categoria.';
         return;
     }
-
     const pool = candidates.filter(q => !answeredQuestions.has(q.id));
-
     if (pool.length === 0) {
-        document.getElementById('qMeta').textContent = 'Todas as perguntas exibidas nesta categoria. Reiniciando...';
+        document.getElementById('qMeta').textContent = 'Todas as perguntas exibidas. Reiniciando...';
         setTimeout(() => {
             answeredQuestions.clear();
             nextQuestion();
         }, 1000);
         return;
     }
-
     const q = pool[Math.floor(Math.random() * pool.length)];
     renderQuestion(q);
 }
 
-// === Preparação do Modo Simulado ===
+// === Simulado ===
 function prepareSimulated() {
     simQuestions = [];
     simAnswers = [];
     simCategoryScores = {};
-
-    // Verifica se há perguntas suficientes para cada categoria
     for (const cat in SIM_CONFIG) {
         const questionsCat = allQuestions.filter(q => q.category === cat);
         if (questionsCat.length < SIM_CONFIG[cat]) {
-            showError(`Não há perguntas suficientes para a categoria "${cat}". Necessário: ${SIM_CONFIG[cat]}, Disponível: ${questionsCat.length}.`);
+            showError(`Não há perguntas suficientes para "${cat}".`);
             return false;
         }
     }
-
-    // Se todas as categorias têm perguntas suficientes, prossegue
     for (const cat in SIM_CONFIG) {
         const questionsCat = shuffleArray(allQuestions.filter(q => q.category === cat));
         simQuestions.push(...questionsCat.slice(0, SIM_CONFIG[cat]));
         simCategoryScores[cat] = 0;
     }
-
     if (simQuestions.length !== SIM_TOTAL) {
-        showError(`Erro ao preparar o simulado: Foram selecionadas ${simQuestions.length} perguntas, mas o esperado era ${SIM_TOTAL}.`);
+        showError(`Erro ao preparar simulado.`);
         return false;
     }
-
     simQuestions = shuffleArray(simQuestions);
     simIndex = 0;
     answeredQuestions.clear();
@@ -412,13 +344,12 @@ function prepareSimulated() {
     updateStats();
     return true;
 }
-
 function loadSimQuestion(i) {
     if (!simQuestions[i]) return renderQuestion(null);
     renderQuestion(simQuestions[i]);
 }
 
-// === Gerenciamento do Timer ===
+// === Timer ===
 function startTimer(seconds) {
     stopTimer();
     timeLeft = seconds;
@@ -432,13 +363,12 @@ function startTimer(seconds) {
         }
     }, 1000);
 }
-
 function stopTimer() {
     if (timer) clearInterval(timer);
     timer = null;
 }
 
-// === Exibição de Pontuação Final no Simulado ===
+// === Resultado Final ===
 function showSimulatedScore(timeout = false) {
     stopTimer();
     const modal = document.getElementById('finalScoreModal');
@@ -450,7 +380,7 @@ function showSimulatedScore(timeout = false) {
     }
     html += '</ul>';
     const aprovado = correctCount >= 82;
-    html += `<p class="${aprovado ? 'aprovado' : 'reprovado'}" style="font-size:1.2em">Resultado: ${aprovado ? 'APROVADO 🎉' : 'REPROVADO ❌'}</p>`;
+    html += `<p class="${aprovado ? 'aprovado' : 'reprovado'}" style="font-size:1.2em">Resultado: ${aprovado ? 'APROVADO Success' : 'REPROVADO Error'}</p>`;
     html += '<h3>Revisão das Respostas</h3>';
     simAnswers.forEach((ans, idx) => {
         const q = ans.question;
@@ -465,7 +395,7 @@ function showSimulatedScore(timeout = false) {
         html += `<p><strong>Sua resposta:</strong> ${selected.length ? selected.map(l => `${l}: ${escapeHTML(q.options[l] || '—')}`).join(', ') : 'Nenhuma selecionada'}</p>`;
         html += `<p><strong>Resposta correta:</strong> ${correct.map(l => `${l}: ${escapeHTML(q.options[l] || '—')}`).join(', ')}</p>`;
         html += `<p><strong>Explicação:</strong> ${escapeHTML(q.explanation || 'Sem explicação.')}</p>`;
-        html += `<p><strong>Resultado:</strong> <span class="${isCorrect ? 'aprovado' : 'reprovado'}">${isCorrect ? 'Correta ✔' : 'Errada ✖'}</span></p>`;
+        html += `<p><strong>Resultado:</strong> <span class="${isCorrect ? 'aprovado' : 'reprovado'}">${isCorrect ? 'Correta Correct' : 'Errada Wrong'}</span></p>`;
         html += '</div>';
     });
     html += '<button class="btn-primary" id="closeScoreBtn" tabindex="0">Fechar</button>';
@@ -476,7 +406,6 @@ function showSimulatedScore(timeout = false) {
     const focusableElements = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
     const first = focusableElements[0];
     const last = focusableElements[focusableElements.length - 1];
-
     modal.addEventListener('keydown', e => {
         if (e.key === 'Tab') {
             if (e.shiftKey && document.activeElement === first) {
@@ -525,7 +454,6 @@ document.getElementById('btnSimulado').addEventListener('click', () => {
     document.getElementById('btnSimulado').setAttribute('aria-pressed', 'true');
     updateStatsInlineVisibility();
     updateActionsInlineVisibility();
-
     if (prepareSimulated()) {
         startTimer(120 * 60);
         loadSimQuestion(0);
@@ -574,6 +502,34 @@ document.getElementById('categorySelect').addEventListener('change', () => {
     if (mode === 'quiz') {
         answeredQuestions.clear();
         nextQuestion();
+    }
+});
+
+// === TEMA CLARO/ESCURO ===
+const themeToggle = document.getElementById('themeToggle');
+const body = document.body;
+
+const savedTheme = localStorage.getItem('ccna-theme');
+if (savedTheme === 'light') {
+    body.classList.add('light-theme');
+    themeToggle.setAttribute('aria-pressed', 'true');
+    themeToggle.setAttribute('aria-label', 'Alternar para tema escuro');
+} else {
+    themeToggle.setAttribute('aria-pressed', 'false');
+    themeToggle.setAttribute('aria-label', 'Alternar para tema claro');
+}
+
+themeToggle.addEventListener('click', () => {
+    const isLight = body.classList.toggle('light-theme');
+    themeToggle.setAttribute('aria-pressed', isLight);
+    themeToggle.setAttribute('aria-label', isLight ? 'Alternar para tema escuro' : 'Alternar para tema claro');
+    localStorage.setItem('ccna-theme', isLight ? 'light' : 'dark');
+});
+
+themeToggle.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        themeToggle.click();
     }
 });
 
