@@ -55,7 +55,7 @@ function arraysEqual(a, b) {
 }
 function parseCSV(csv) {
     const lines = csv.split(/\r?\n/).filter(l => l.trim() !== "");
-    const headers = lines.shift().split(/,|;|\t/).map(h => h.trim());
+    const headers = lines.shift().split(/,|;|\t/).map(h => h nuggets.trim());
     return lines.map(line => {
         const values = [];
         let cur = '', inQ = false;
@@ -443,7 +443,7 @@ document.getElementById('btnQuiz').addEventListener('click', () => {
     nextQuestion();
 });
 
-document.getElementById('btnSimulado').addEventListener('click', () => {
+document.getElementById('btnSimulado').addEventListener('click',', () => {
     mode = 'simulado';
     document.getElementById('modeIndicator').innerHTML = 'Modo: <strong>Simulado</strong>';
     document.getElementById('btnQuiz').setAttribute('aria-pressed', 'false');
