@@ -126,7 +126,7 @@ button:focus-visible, select:focus-visible {
 .btn-ghost:hover {
   background: rgba(255,255,255,0.05);
 }
-.btn-ghost[aria-pressed="true"] {
+.btn-ghost[-tenue="true"] {
   background: rgba(255,255,255,0.1);
   border-color: var(--accent);
   box-shadow: 0 0 0 2px rgba(14,165,164,0.2);
@@ -187,7 +187,7 @@ button:focus-visible, select:focus-visible {
   margin-right: 0.125rem;
 }
 
-/* === Cartão de Pergunta (cor original mantida) === */
+/* === Cartão de Pergunta === */
 main {
   display: grid;
   grid-template-columns: 1fr;
@@ -289,39 +289,110 @@ main {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* === TEMA CLARO (apenas texto/bordas mudam) === */
-body.light-theme .card {
-  background: var(--card);
-  color: #e6eef6;
+/* === TEMA CLARO (agradável, branco gelo suave) === */
+body.light-theme {
+  background: linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 100%);
+  color: #1a1a1a;
 }
+
+body.light-theme .card {
+  background: #fdfdfd;
+  color: #1a1a1a;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 6px 18px rgba(0,0,0,.08);
+}
+
+body.light-theme .card .question-num {
+  color: #64748b;
+}
+
 body.light-theme .card .question-text,
 body.light-theme .card .explanation,
 body.light-theme .card .opt .text {
-  color: #e6eef6;
+  color: #1a1a1a;
 }
+
 body.light-theme .card .opt {
-  border-color: rgba(255,255,255,.12);
-  background: rgba(255,255,255,0.03);
+  border-color: #cbd5e1;
+  background: #f8fafc;
 }
+
 body.light-theme .card .opt:hover {
-  background: rgba(14,165,164,0.12);
-  border-color: var(--accent);
+  background: rgba(14,165,164,0.08);
+  border-color: #0ea5a4;
+  box-shadow: 0 0 0 2px rgba(14,165,164,0.15);
 }
+
+body.light-theme .card .opt[aria-pressed="true"] {
+  border-color: #fbbf24;
+  background: rgba(251,191,36,0.12);
+  box-shadow: 0 0 0 2px rgba(251,191,36,0.2);
+}
+
 body.light-theme .card .opt.correct {
-  background: rgba(16,185,129,0.1);
-  border-color: rgba(16,185,129,0.7);
+  background: rgba(16,185,129,0.12);
+  border-color: #16a34a;
 }
+
 body.light-theme .card .opt.wrong {
-  background: rgba(239,68,68,0.08);
-  border-color: rgba(239,68,68,0.5);
+  background: rgba(239,68,68,0.1);
+  border-color: #ef4444;
 }
+
 body.light-theme .card .explanation {
-  background: rgba(255,255,255,0.08);
-  color: #b0c4de;
+  background: #f1f5f9;
+  color: #475569;
+  border-left: 3px solid #0ea5a4;
 }
+
 body.light-theme .card .letter {
-  background: rgba(255,255,255,0.08);
-  color: #e6eef6;
+  background: #e2e8f0;
+  color: #1a1a1a;
+}
+
+body.light-theme .mode-indicator,
+body.light-theme .stats-inline,
+body.light-theme .actions-inline {
+  background: rgba(0,0,0,0.03);
+}
+
+body.light-theme button,
+body.light-theme select {
+  background: linear-gradient(180deg, #f8fafc, #f1f5f9);
+  border-color: #cbd5e1;
+  color: #1a1a1a;
+}
+
+body.light-theme .btn-primary {
+  background: linear-gradient(180deg, #0ea5a4, #0d8b8a);
+  color: white;
+}
+
+body.light-theme .btn-ghost {
+  background: transparent;
+  border-color: #cbd5e1;
+  color: #1a1a1a;
+}
+
+body.light-theme .btn-ghost:hover {
+  background: rgba(14,165,164,0.08);
+}
+
+body.light-theme .btn-ghost[aria-pressed="true"] {
+  background: rgba(14,165,164,0.12);
+  border-color: #0ea5a4;
+}
+
+body.light-theme .timer {
+  color: #0ea5a4;
+}
+
+body.light-theme .correct-message {
+  background: #16a34a;
+}
+
+body.light-theme .error-message {
+  background: #ef4444;
 }
 
 /* === Rodapé e Dicas === */
@@ -424,11 +495,11 @@ footer {
 }
 .error-message {
   background: var(--danger);
-  color: var(--text-primary);
+  color: white;
 }
 .correct-message {
   background: var(--success);
-  color: var(--text-primary);
+  color: white;
   animation: fadeInOut 1s ease-in-out;
 }
 @keyframes fadeInOut {
