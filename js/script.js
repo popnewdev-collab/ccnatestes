@@ -53,10 +53,6 @@ function formatTime(s) {
 function arraysEqual(a, b) {
     return a.length === b.length && a.every((val, index) => val === b[index]);
 }
-function focusFirstOption() {
-    const first = document.querySelector('.opt:not(.opt-disabled)');
-    if (first) first.focus();
-}
 function parseCSV(csv) {
     const lines = csv.split(/\r?\n/).filter(l => l.trim() !== "");
     const headers = lines.shift().split(/,|;|\t/).map(h => h.trim());
@@ -90,7 +86,7 @@ function showCorrectMessage() {
     const messageDiv = document.createElement('div');
     messageDiv.className = 'correct-message';
     messageDiv.setAttribute('aria-live', 'assertive');
-    messageDiv.textContent = 'Acertou Correct';
+    messageDiv.textContent = 'Acertou';
     document.body.appendChild(messageDiv);
     setTimeout(() => messageDiv.remove(), 1000);
 }
@@ -209,7 +205,7 @@ function renderQuestion(q) {
 function showExplanation(isCorrect) {
     const expl = document.getElementById('explanation');
     expl.style.display = 'block';
-    expl.innerHTML = `<strong>${isCorrect ? 'Acertou Correct' : 'Errou Wrong'}</strong><div style="margin-top:0.5rem">${escapeHTML(current.explanation || 'Sem explicação disponível.')}</div>`;
+    expl.innerHTML = `<strong>${isCorrect ? 'Acertou' : 'Errou'}</strong><div style="margin-top:0.5rem">${escapeHTML(current.explanation || 'Sem explicação disponível.')}</div>`;
     if (!isCorrect) {
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         document.getElementById('questionCard').animate([
@@ -380,7 +376,7 @@ function showSimulatedScore(timeout = false) {
     }
     html += '</ul>';
     const aprovado = correctCount >= 82;
-    html += `<p class="${aprovado ? 'aprovado' : 'reprovado'}" style="font-size:1.2em">Resultado: ${aprovado ? 'APROVADO Success' : 'REPROVADO Error'}</p>`;
+    html += `<p class="${aprovado ? 'aprovado' : 'reprovado'}" style="font-size:1.2em">Resultado: ${aprovado ? 'APROVADO' : 'REPROVADO'}</p>`;
     html += '<h3>Revisão das Respostas</h3>';
     simAnswers.forEach((ans, idx) => {
         const q = ans.question;
@@ -395,7 +391,7 @@ function showSimulatedScore(timeout = false) {
         html += `<p><strong>Sua resposta:</strong> ${selected.length ? selected.map(l => `${l}: ${escapeHTML(q.options[l] || '—')}`).join(', ') : 'Nenhuma selecionada'}</p>`;
         html += `<p><strong>Resposta correta:</strong> ${correct.map(l => `${l}: ${escapeHTML(q.options[l] || '—')}`).join(', ')}</p>`;
         html += `<p><strong>Explicação:</strong> ${escapeHTML(q.explanation || 'Sem explicação.')}</p>`;
-        html += `<p><strong>Resultado:</strong> <span class="${isCorrect ? 'aprovado' : 'reprovado'}">${isCorrect ? 'Correta Correct' : 'Errada Wrong'}</span></p>`;
+        html += `<p><strong>Resultado:</strong> <span class="${isCorrect ? 'aprovado' : 'reprovado'}">${isCorrect ? 'Correta' : 'Errada'}</span></p>`;
         html += '</div>';
     });
     html += '<button class="btn-primary" id="closeScoreBtn" tabindex="0">Fechar</button>';
@@ -505,25 +501,26 @@ document.getElementById('categorySelect').addEventListener('change', () => {
     }
 });
 
-// === TEMA CLARO/ESCURO ===
+// === TEMA CLARO/ESCURO (com label alternado) ===
 const themeToggle = document.getElementById('themeToggle');
 const body = document.body;
+const themeLabel = themeToggle.querySelector('.theme-label');
 
 const savedTheme = localStorage.getItem('ccna-theme');
-if (savedTheme === 'light') {
-    body.classList.add('light-theme');
-    themeToggle.setAttribute('aria-pressed', 'true');
-    themeToggle.setAttribute('aria-label', 'Alternar para tema escuro');
-} else {
-    themeToggle.setAttribute('aria-pressed', 'false');
-    themeToggle.setAttribute('aria-label', 'Alternar para tema claro');
-}
+const isLight = savedTheme === 'light';
+
+body.classList.toggle('light-theme', isLight);
+themeToggle.setAttribute('aria-pressed', isLight);
+themeLabel.textContent = isLight ? 'Dark theme' : 'Clear theme';
+themeToggle.setAttribute('aria-label', isLight ? 'Dark theme' : 'Clear theme');
 
 themeToggle.addEventListener('click', () => {
-    const isLight = body.classList.toggle('light-theme');
-    themeToggle.setAttribute('aria-pressed', isLight);
-    themeToggle.setAttribute('aria-label', isLight ? 'Alternar para tema escuro' : 'Alternar para tema claro');
-    localStorage.setItem('ccna-theme', isLight ? 'light' : 'dark');
+    const nowLight = body.classList.toggle('light-theme');
+    const label = nowLight ? 'Dark theme' : 'Clear theme';
+    themeLabel.textContent = label;
+    themeToggle.setAttribute('aria-pressed', nowLight);
+    themeToggle.setAttribute('aria-label', label);
+    localStorage.setItem('ccna-theme', nowLight ? 'light' : 'dark');
 });
 
 themeToggle.addEventListener('keydown', e => {
