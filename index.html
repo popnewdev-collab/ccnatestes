@@ -11,9 +11,14 @@
 <body>
   <div class="app">
     <header>
+      <!-- Mode + Botão de Tema lado a lado -->
       <div class="mode-header">
         <span class="mode-indicator" id="modeIndicator">Mode: <strong>Quiz</strong></span>
+        <button id="themeToggle" class="btn-ghost theme-toggle-btn" aria-pressed="false" aria-label="Clear theme">
+          <span class="theme-label">Clear theme</span>
+        </button>
       </div>
+
       <div class="controls" role="group" aria-label="Quiz Controls">
         <button id="btnQuiz" class="btn-ghost" aria-pressed="true" tabindex="0">Quiz</button>
         <button id="btnSimulado" class="btn-ghost" aria-pressed="false" tabindex="0">Practice Test</button>
@@ -22,14 +27,8 @@
           <option value="all">All</option>
         </select>
       </div>
-      <!-- BOTÃO DE TEMA ADICIONADO AQUI -->
-      <div class="theme-toggle" role="group" aria-label="Alternar tema">
-        <button id="themeToggle" class="btn-ghost" aria-label="Alternar para tema claro" tabindex="0">
-          <span class="icon-sun">Sun</span>
-          <span class="icon-moon">Moon</span>
-        </button>
-      </div>
     </header>
+
     <div class="actions-inline" id="actionsInline">
       <button id="restartBtn" class="btn-ghost" aria-label="Restart quiz">Restart</button>
       <div class="timer-box">
@@ -37,12 +36,14 @@
         <span class="timer" id="timerDisplay" aria-live="polite">--:--:--</span>
       </div>
     </div>
+
     <div class="stats-inline" id="statsInline" role="region" aria-label="Quiz Statistics">
       <span><strong>Questions:</strong> <span id="totalAsked">0</span></span>
       <span><strong>Correct:</strong> <span id="totalCorrect">0</span></span>
       <span><strong>Incorrect:</strong> <span id="totalWrong">0</span></span>
       <span><strong>Progress:</strong> <span id="progress">0%</span></span>
     </div>
+
     <main>
       <section>
         <div class="card" id="questionCard" tabindex="0">
@@ -62,26 +63,26 @@
         </div>
       </section>
     </main>
+
     <footer>
       <div>
         <span class="visually-hidden" id="accessibilityStatus" aria-live="assertive"></span>
       </div>
     </footer>
+
     <div class="final-score-modal" id="finalScoreModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" tabindex="-1">
       <!-- Dynamically generated content -->
     </div>
   </div>
+
   <script src="js/config.js" defer></script>
   <script src="js/script.js" defer></script>
-  <!-- JavaScript to block copying and right-click, without notification on right-click -->
+
+  <!-- Bloqueio de cópia (opcional) -->
   <script>
-    document.addEventListener('contextmenu', function(e) {
-      e.preventDefault();
-    });
-    document.addEventListener('selectstart', function(e) {
-      e.preventDefault();
-    });
-    document.addEventListener('copy', function(e) {
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('selectstart', e => e.preventDefault());
+    document.addEventListener('copy', e => {
       e.preventDefault();
       alert('Copying content is disabled.');
     });
